@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Haniel Stores | Products</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/products.css" />
+  </head>
+  <body>
+   
+    <!----- NAVIGATION BAR ------->
+
+    <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+      <div class="container">
+        <a
+          href=""
+          class="navbar-brand d-flex align-items-center gap-4 brand"
+          href="#"
+        >
+          <img
+            src="images/HnaielStoresLogo2.png"
+            class="img-fluid rounded-circle"
+            alt="company logo"
+          />
+          <h1>Haniel Stores</h1>
+        </a>
+        <button
+          class="navbar-toggler border-0 shadow-none"
+          data-bs-toggle="collapse"
+          data-bs-target="#nav"
+        >
+          <i class="bi bi-list fs-3"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="nav">
+          <ul class="navbar-nav mx-auto gap-lg-4">
+            <li><a class="nav-link" href="index.html">Home</a></li>
+            <li><a class="nav-link" href="contact.html">Contact</a></li>
+            <li><a class="nav-link" href="about.html">About</a></li>
+            <li><a class="nav-link" href="signup.html">Sign Up</a></li>
+          </ul>
+
+          <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+            <div class="nav-search">
+              <input
+                id="navSearch"
+                class="form-control"
+                placeholder="What are you looking for?"
+              /><i class="bi bi-search"></i>
+            </div>
+            <a href="#" class="nav-icon"><i class="bi bi-heart"></i></a>
+            <a href="cart.html" class="nav-icon position-relative"
+              ><i class="bi bi-cart3"></i><b id="cartCount">0</b></a
+            >
+            <a href="login.html" class="nav-icon"
+              ><i class="bi bi-person"></i
+            ></a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <div class="container pt-5">
+        <div class="crumb">
+          <a href="index.html">Home</a><span>/</span><span>Products</span>
+        </div>
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mt-4 gap-3"
+        >
+          <div>
+            <span class="label">Our Products</span>
+            <h1>Explore Our Products</h1>
+            <p class="text-muted mb-0">
+              Browse our complete collection and find something you love.
+            </p>
+          </div>
+          <span id="resultCount" class="text-muted small"
+            >Loading products...</span
+          >
+        </div>
+
+        <div class="controls row g-3 mt-3">
+          <div class="col-lg-5">
+            <div class="filter-search">
+              <i class="bi bi-search"></i>
+              <input
+                id="productSearch"
+                class="form-control"
+                placeholder="Search products..."
+              />
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <select id="category" class="form-select">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <select id="sort" class="form-select">
+              <option value="default">Sort: Default</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name-a">Name: A - Z</option>
+              <option value="name-z">Name: Z - A</option>
+              <option value="rating">Highest Rated</option>
+            </select>
+          </div>
+          <div class="col-lg-1">
+            <button id="clear" class="btn clear w-100">
+              <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="loading" class="row g-4 mt-4">
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="skeleton pic"></div>
+            <div class="skeleton line"></div>
+            <div class="skeleton line sm"></div>
+          </div>
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="skeleton pic"></div>
+            <div class="skeleton line"></div>
+            <div class="skeleton line sm"></div>
+          </div>
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="skeleton pic"></div>
+            <div class="skeleton line"></div>
+            <div class="skeleton line sm"></div>
+          </div>
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="skeleton pic"></div>
+            <div class="skeleton line"></div>
+            <div class="skeleton line sm"></div>
+          </div>
+        </div>
+
+        <div id="error" class="empty d-none mt-5">
+          <i class="bi bi-wifi-off"></i>
+          <h3>Couldn't load products</h3>
+          <p id="errorText" class="text-muted"></p>
+          <button id="retry" class="btn main">Try Again</button>
+        </div>
+        <div id="grid" class="row g-4 mt-4"></div>
+        <div id="empty" class="empty d-none">
+          <i class="bi bi-box-seam"></i>
+          <h3>No products found</h3>
+          <p>Try another search or filter.</p>
+          <button id="emptyClear" class="btn main">Clear Filters</button>
+        </div>
+        <nav>
+          <ul id="pages" class="pagination justify-content-center my-5"></ul>
+        </nav>
+      </div>
+    </main>
+
+    <!-- --------FOOTER-------- -->
+
+    <footer class="footer">
+      <div class="container py-5">
+        <div class="row g-4">
+          <div class="col-md-6 col-lg">
+            <h4>Haniel Stores</h4>
+            <h6>Subscribe</h6>
+            <p>Get 10% off your first order</p>
+            <form id="subscribe" class="subscribe">
+              <input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                required
+              /><button><i class="bi bi-send"></i></button>
+            </form>
+          </div>
+            <div class="col-6 col-lg" >
+            <h4>Support</h4>
+            <p>University of portarcourt,<br />Choba portharcourt, Rivers State Nigeria.</p>
+            <p>HanielStoresintl@gmail.com</p>
+            <p>+234-813-7696-931</p>
+          </div>
+          <div class="col-6 col-lg">
+            <h6>Account</h6>
+            <a href="#">My Account</a><a href="login.html">Login / Register</a
+            ><a href="cart.html">Cart</a><a href="#">Wishlist</a
+            ><a href="#">Shop</a>
+          </div>
+          <div class="col-6 col-lg">
+            <h6>Quick Link</h6>
+            <a href="#">Privacy Policy</a><a href="#">Terms Of Use</a
+            ><a href="#">FAQ</a><a href="contact.html">Contact</a>
+          </div>
+
+         
+        <div class="footer-column app-column col-6 col-lg">
+          <h4>Download App</h4>
+          <p>Save $3 with App New User Only</p>
+
+          <div class="app-download-box d-flex">
+            <div class="qr-section d-flex align-items-center">
+              <img src="images/Qrcode 1.png" alt="QR Code" />
+            </div>
+
+            <div class="store-section w-50 d-flex flex-column">
+              <a
+                href="#"
+                class="store-link flex-fill d-flex align-items-center justify-content-center"
+              >
+                <img src="images/GooglePlay.png" alt="Google Play" />
+              </a>
+
+              <a
+                href="#"
+                class="store-link flex-fill d-flex align-items-center justify-content-center"
+              >
+                <img src="images/AppStore.png" alt="Apple App Store" />
+              </a>
+            </div>
+          </div>
+
+          <div class="footer-socials d-flex">
+            <a href="#"><i class="bi bi-facebook"></i></a>
+            <a href="#"><i class="bi bi-twitter-x"></i></a>
+            <a href="#"><i class="bi bi-instagram"></i></a>
+            <a href="#"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+        </div>
+      </div>
+      <div class="copyright">
+        © Copyright Exclusive 2026. All rights reserved.
+      </div>
+    </footer>
+
+    <!-- ------BACK TO TOP----- -->
+    
+    <button id="top" class="back"><i class="bi bi-arrow-up"></i></button>
+    <div
+      id="toasts"
+      class="toast-container position-fixed bottom-0 end-0 p-3"
+    ></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/products.js"></script>
+  </body>
+</html>
