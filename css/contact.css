@@ -32,21 +32,24 @@ textarea {
   padding: 18px 0;
 }
 
-.navbar-brand {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+.brand img {
+  width: 50px;
+  height: 50px;
 }
 
+.brand h1 {
+  font-size: 25px;
+  font-weight: 700;
+}
 .nav-links {
   gap: 30px;
 }
 
 .nav-links .nav-link {
-  position: relative;
+  font-size: 12px;
   color: #222;
-  font-size: 15px;
-  padding: 8px 0;
+  position: relative;
+  padding-left: 0px 6px;
   transition: 0.3s ease;
 }
 
@@ -472,20 +475,20 @@ textarea.form-control {
 .app-download-box {
   width: 100%;
   min-height: 90px;
-  border: 1px solid #333;
   padding: 7px;
   gap: 8px;
 }
 
 .qr-section img {
-  width: 75px;
-  height: 75px;
+  width: 50;
+  height: 50px;
   object-fit: contain;
 }
 
-.store-section {
-  gap: 5px;
-}
+.store-section img{
+  width: 70px;
+  height: 20px;
+} 
 
 .store-link {
   background: #fff;
