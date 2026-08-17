@@ -992,15 +992,12 @@ footer {
   }
 }
 
+
 @media (max-width: 767.98px) {
   .top-inner {
     font-size: 8px;
     padding-right: 55px;
     text-align: center;
-  }
-
-  .language {
-    display: none;
   }
 
   .search-box {
@@ -1080,6 +1077,7 @@ footer {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
 
 @media (max-width: 420px) {
   .product-grid,
