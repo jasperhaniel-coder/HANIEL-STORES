@@ -309,17 +309,18 @@ h1 {
   background: #000;
   color: #fff;
   margin-top: 70px;
+  
 }
 
 .footer p,
 .footer a,
 .footer small {
   display: block;
-  color: #eee;
-  font-size: 11px;
-  line-height: 1.7;
-  margin-bottom: 8px;
+  font-size: 9px;
+  color: #ccc;
+  margin-bottom: 9px;
 }
+
 
 .footer h4 {
   font-size: 15px;
@@ -420,6 +421,10 @@ h1 {
     background-position: -200% 0;
   }
 }
+
+/* RESPONSIVENESS----- */
+
+
 @media (max-width: 991px) {
   .nav-search {
     width: 100%;
@@ -429,6 +434,7 @@ h1 {
     transform: none;
   }
 }
+
 @media (max-width: 575px) {
   h1 {
     font-size: 29px;
