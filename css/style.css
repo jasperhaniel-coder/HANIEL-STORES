@@ -1102,4 +1102,8 @@ footer {
   .arrival-small-row .arrival-card {
     height: 170px;
   }
+
+    .footer-main {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

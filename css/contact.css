@@ -389,7 +389,7 @@ textarea.form-control {
 .footer-column {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .footer-column h3 {
@@ -475,8 +475,7 @@ textarea.form-control {
 .app-download-box {
   width: 100%;
   min-height: 90px;
-  padding: 7px;
-  gap: 8px;
+  padding: 4px;
 }
 
 .qr-section img {
@@ -491,13 +490,12 @@ textarea.form-control {
 } 
 
 .store-link {
-  background: #fff;
   border-radius: 3px;
   overflow: hidden;
 }
 
 .store-link img {
-  width: 85px;
+  width: 80px;
   max-width: 100%;
   height: auto;
   object-fit: contain;
@@ -507,12 +505,11 @@ textarea.form-control {
 .footer-socials {
   display: flex;
   gap: 18px;
-  margin-top: 15px;
 }
 
 .footer-socials a {
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   transition: 0.3s ease;
 }
 
