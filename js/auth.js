@@ -1,3 +1,7 @@
+const isInPagesFolder = window.location.pathname.includes("/pages/") || window.location.pathname.endsWith("/pages");
+const pageLink = (page) => isInPagesFolder ? page : `pages/${page}`;
+const homeLink = isInPagesFolder ? "../index.html" : "index.html";
+
 document.addEventListener("DOMContentLoaded", () => {
     const toastElement = document.getElementById("authToast");
     const toastText = document.getElementById("toastText");
@@ -70,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (cartBtn) {
         cartBtn.addEventListener("click", () => {
-            window.location.href = "cart.html";
+            window.location.href = pageLink("cart.html");
         });
     }
 
@@ -283,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 showMessage("Account created successfully!");
 
                 setTimeout(() => {
-                    window.location.href = "login.html";
+                    window.location.href = pageLink("login.html");
                 }, 900);
             }, 600);
         });
@@ -379,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 showMessage(`Welcome back, ${account.name}!`);
 
                 setTimeout(() => {
-                    window.location.href = "index.html";
+                    window.location.href = homeLink;
                 }, 900);
             }, 600);
         });

@@ -1,15 +1,29 @@
+/* =====================================================================
+   HANIEL STORES - products page script
 
-const API_URL = "https://jsonplaceholder.typicode.com/albums";
+   Products come from the server (/api/products), one page at a time.
+   Searching, filtering, sorting and paging all happen on the server,
+   so this page stays fast no matter how many products the store has.
+   ===================================================================== */
+
+const API_URL = "/api/products";
+const CATEGORIES_URL = "/api/categories";
+const IMAGE_FALLBACK = "https://placehold.co/600x600/f5f5f5/777?text=No+Image";
 
 const S = {
-  all: [],
-  shown: [],
+  shown: [], // the products on the current page
+  total: 0, // how many products match the filters (all pages)
+  totalPages: 1,
   page: 1,
   perPage: 12,
   search: "",
   category: "all",
   sort: "default",
 };
+const byId = new Map(); // every product seen so far, so "Add To Cart" can find it
+let requestId = 0; // used to ignore out-of-date responses
+let searchTimer;
+
 const $ = (id) => document.getElementById(id);
 const grid = $("grid"),
   loading = $("loading"),
@@ -17,28 +31,28 @@ const grid = $("grid"),
   empty = $("empty");
 
 document.addEventListener("DOMContentLoaded", () => {
+  readUrlFilters();
+  loadCategories();
   fetchProducts();
   updateCart();
   $("productSearch").oninput = (e) => {
-    S.search = e.target.value.toLowerCase().trim();
-    S.page = 1;
-    filter();
+    S.search = e.target.value.trim();
+    queueSearch();
   };
   $("navSearch").oninput = (e) => {
     $("productSearch").value = e.target.value;
-    S.search = e.target.value.toLowerCase().trim();
-    S.page = 1;
-    filter();
+    S.search = e.target.value.trim();
+    queueSearch();
   };
   $("category").onchange = (e) => {
     S.category = e.target.value;
     S.page = 1;
-    filter();
+    fetchProducts();
   };
   $("sort").onchange = (e) => {
     S.sort = e.target.value;
     S.page = 1;
-    filter();
+    fetchProducts();
   };
   $("clear").onclick = $("emptyClear").onclick = clear;
   $("retry").onclick = fetchProducts;
@@ -49,86 +63,114 @@ document.addEventListener("DOMContentLoaded", () => {
   $("top").onclick = () => scrollTo({ top: 0, behavior: "smooth" });
 });
 
+// Lets other pages link here with a ready-made search or category,
+// for example products.html?search=camera or products.html?category=Gaming
+function readUrlFilters() {
+  const params = new URLSearchParams(location.search);
+  const search = (params.get("search") || "").trim().slice(0, 60);
+  const category = (params.get("category") || "").trim().slice(0, 80);
+  if (search) {
+    S.search = search;
+    $("productSearch").value = $("navSearch").value = search;
+  }
+  if (category) S.category = category;
+}
+
+// Wait a moment after the visitor stops typing before asking the server.
+function queueSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    S.page = 1;
+    fetchProducts();
+  }, 300);
+}
+
 async function fetchProducts() {
+  const mine = ++requestId;
   loading.classList.remove("d-none");
   error.classList.add("d-none");
+  empty.classList.add("d-none");
   grid.innerHTML = "";
+  $("pages").innerHTML = "";
   try {
-    const r = await fetch(API_URL);
+    const q = new URLSearchParams({ page: S.page, limit: S.perPage });
+    if (S.search) q.set("search", S.search);
+    if (S.category !== "all") q.set("category", S.category);
+    if (S.sort !== "default") q.set("sort", S.sort);
+    const r = await fetch(`${API_URL}?${q}`);
     if (!r.ok) throw Error("HTTP " + r.status);
     const d = await r.json();
-    const arr = Array.isArray(d) ? d : d.products || d.data || d.results || [];
-    if (!Array.isArray(arr)) throw Error("Invalid product response");
-    S.all = arr.map(normalize);
-    buildCategories();
-    filter();
+    if (mine !== requestId) return; // a newer request has taken over
+    if (!Array.isArray(d.products)) throw Error("Invalid product response");
+    // We asked for a page that no longer exists: go to the last real one.
+    if (!d.products.length && d.total > 0 && S.page > 1) {
+      S.page = Math.max(1, d.totalPages);
+      return fetchProducts();
+    }
+    S.shown = d.products.map(normalize);
+    S.total = d.total;
+    S.totalPages = d.totalPages;
+    S.shown.forEach((p) => byId.set(String(p.id), p));
     loading.classList.add("d-none");
+    render();
   } catch (e) {
+    if (mine !== requestId) return;
     console.error(e);
     loading.classList.add("d-none");
     error.classList.remove("d-none");
     $("errorText").textContent =
-      "Update API_URL in js/products.js to your backend endpoint.";
+      "We couldn't load the products. Please check your connection and try again.";
     $("resultCount").textContent = "Unable to load products";
+  }
+}
+
+async function loadCategories() {
+  try {
+    const r = await fetch(CATEGORIES_URL);
+    if (!r.ok) throw Error("HTTP " + r.status);
+    const d = await r.json();
+    $("category").innerHTML = '<option value="all">All Categories</option>';
+    (d.categories || [])
+      .map((c) => c.name)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach((c) => {
+        const o = document.createElement("option");
+        o.value = c;
+        o.textContent = c;
+        $("category").appendChild(o);
+      });
+    const known = [...$("category").options].some((o) => o.value === S.category);
+    $("category").value = known ? S.category : "all";
+  } catch (e) {
+    // Not fatal: the page still works with just "All Categories".
+    console.error(e);
   }
 }
 
 function normalize(p) {
   return {
-    id: p.id ?? p._id ?? crypto.randomUUID(),
-    name: p.name ?? p.title ?? p.productName ?? "Unnamed Product",
-    price: +(p.price ?? p.currentPrice ?? 0),
-    old: +(p.oldPrice ?? p.originalPrice ?? p.compareAtPrice ?? 0),
-    image:
-      p.image ??
-      p.imageUrl ??
-      p.thumbnail ??
-      p.images?.[0] ??
-      "https://placehold.co/600x600/f5f5f5/777?text=Product",
-    category: p.category?.name ?? p.category ?? p.categoryName ?? "Other",
-    rating: +(p.rating ?? p.ratings ?? 0),
-    reviews: +(p.reviews ?? p.reviewCount ?? 0),
+    id: p.id,
+    name: p.name || "Unnamed Product",
+    price: +p.price || 0,
+    old: +(p.oldPrice ?? 0),
+    image: p.image || "https://placehold.co/600x600/f5f5f5/777?text=Product",
+    category: p.category || "Other",
+    rating: +p.rating || 0,
+    reviews: +p.reviews || 0,
     discount: +(p.discount ?? 0),
   };
 }
 
-function buildCategories() {
-  $("category").innerHTML = '<option value="all">All Categories</option>';
-  [...new Set(S.all.map((p) => p.category))].sort().forEach((c) => {
-    const o = document.createElement("option");
-    o.value = c;
-    o.textContent = c;
-    $("category").appendChild(o);
-  });
-}
-
-function filter() {
-  let a = [...S.all];
-  if (S.search)
-    a = a.filter((p) =>
-      (p.name + " " + p.category).toLowerCase().includes(S.search),
-    );
-  if (S.category !== "all") a = a.filter((p) => p.category === S.category);
-  if (S.sort === "price-low") a.sort((x, y) => x.price - y.price);
-  if (S.sort === "price-high") a.sort((x, y) => y.price - x.price);
-  if (S.sort === "name-a") a.sort((x, y) => x.name.localeCompare(y.name));
-  if (S.sort === "name-z") a.sort((x, y) => y.name.localeCompare(x.name));
-  if (S.sort === "rating") a.sort((x, y) => y.rating - x.rating);
-  S.shown = a;
-  render();
-}
-
 function render() {
   $("resultCount").textContent =
-    `${S.shown.length} product${S.shown.length === 1 ? "" : "s"} found`;
+    `${S.total} product${S.total === 1 ? "" : "s"} found`;
   grid.innerHTML = "";
   empty.classList.toggle("d-none", S.shown.length > 0);
   if (!S.shown.length) {
     $("pages").innerHTML = "";
     return;
   }
-  const start = (S.page - 1) * S.perPage;
-  S.shown.slice(start, start + S.perPage).forEach((p, i) => {
+  S.shown.forEach((p, i) => {
     const col = document.createElement("div");
     col.className = "col-6 col-md-4 col-lg-3";
     col.innerHTML = card(p, i);
@@ -137,19 +179,29 @@ function render() {
   pages();
 }
 
+function readWishlist() {
+  try {
+    const w = JSON.parse(localStorage.getItem("exclusiveWishlist") || "[]");
+    return Array.isArray(w) ? w : [];
+  } catch {
+    return [];
+  }
+}
+
 function card(p, i) {
   const discount =
     p.discount ||
     (p.old > p.price ? Math.round(((p.old - p.price) / p.old) * 100) : 0);
   const old =
     p.old > p.price ? `<span class="old">$${money(p.old)}</span>` : "";
+  const wished = readWishlist().some((x) => String(x) === String(p.id));
   return `<div class="product-card" style="animation-delay:${i * 45}ms">
- <div class="product-image-wrap">${discount ? `<span class="discount">-${discount}%</span>` : ""}
- <div class="actions"><button class="action wish" data-id="${esc(p.id)}"><i class="bi bi-heart"></i></button><button class="action view" data-id="${esc(p.id)}"><i class="bi bi-eye"></i></button></div>
- <img class="product-image" loading="lazy" src="${esc(p.image)}" alt="${esc(p.name)}" onerror="this.src='https://placehold.co/600x600/f5f5f5/777?text=No+Image'"></div>
+ <div class="product-image-wrap">${discount ? `<span class="discount">-${esc(discount)}%</span>` : ""}
+ <div class="actions"><button class="action wish${wished ? " active" : ""}" data-id="${esc(p.id)}"><i class="bi bi-heart"></i></button><button class="action view" data-id="${esc(p.id)}"><i class="bi bi-eye"></i></button></div>
+ <img class="product-image" loading="lazy" src="${esc(p.image)}" alt="${esc(p.name)}" onerror="this.onerror=null;this.src='${IMAGE_FALLBACK}'"></div>
  <h3 class="name" title="${esc(p.name)}">${esc(p.name)}</h3>
  <div><span class="price">$${money(p.price)}</span>${old}</div>
- <div class="rating">${stars(p.rating)} <span>(${p.reviews})</span></div>
+ <div class="rating">${stars(p.rating)} <span>(${esc(p.reviews)})</span></div>
  <button class="add" data-id="${esc(p.id)}"><i class="bi bi-cart-plus"></i> Add To Cart</button>
  </div>`;
 }
@@ -164,7 +216,7 @@ grid.addEventListener("click", (e) => {
 });
 
 function addCart(id) {
-  const p = S.all.find((x) => String(x.id) === String(id));
+  const p = byId.get(String(id));
   if (!p) return;
   let c = JSON.parse(localStorage.getItem("exclusiveCart") || "[]");
   const x = c.find((x) => String(x.id) === String(id));
@@ -188,8 +240,8 @@ function updateCart() {
 }
 
 function wishlist(b) {
-  let w = JSON.parse(localStorage.getItem("exclusiveWishlist") || "[]"),
-    id = b.dataset.id;
+  let w = readWishlist(),
+    id = Number(b.dataset.id);
   if (w.some((x) => String(x) === String(id))) {
     w = w.filter((x) => String(x) !== String(id));
     b.classList.remove("active");
@@ -202,25 +254,49 @@ function wishlist(b) {
   localStorage.setItem("exclusiveWishlist", JSON.stringify(w));
 }
 
+// Shows page numbers. With a few pages it lists them all; with many it
+// shows the first, the last, and the pages around the current one.
+function pageNumbers(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const keep = [
+    ...new Set([1, total, current - 1, current, current + 1]),
+  ]
+    .filter((n) => n >= 1 && n <= total)
+    .sort((a, b) => a - b);
+  const out = [];
+  keep.forEach((n, i) => {
+    if (i && n - keep[i - 1] > 1) out.push("…");
+    out.push(n);
+  });
+  return out;
+}
+
 function pages() {
   const ul = $("pages"),
-    total = Math.ceil(S.shown.length / S.perPage);
+    total = S.totalPages;
   ul.innerHTML = "";
   if (total < 2) return;
-  for (let i = 1; i <= total; i++) {
+  pageNumbers(S.page, total).forEach((item) => {
     const li = document.createElement("li");
-    li.className = "page-item " + (i === S.page ? "active" : "");
-    li.innerHTML = `<button class="page-link">${i}</button>`;
-    li.onclick = () => {
-      S.page = i;
-      render();
-      scrollTo({ top: 0, behavior: "smooth" });
-    };
+    if (item === "…") {
+      li.className = "page-item disabled";
+      li.innerHTML = `<span class="page-link">…</span>`;
+    } else {
+      li.className = "page-item " + (item === S.page ? "active" : "");
+      li.innerHTML = `<button class="page-link">${item}</button>`;
+      li.onclick = () => {
+        if (item === S.page) return;
+        S.page = item;
+        fetchProducts();
+        scrollTo({ top: 0, behavior: "smooth" });
+      };
+    }
     ul.appendChild(li);
-  }
+  });
 }
 
 function clear() {
+  clearTimeout(searchTimer);
   S.search = "";
   S.category = "all";
   S.sort = "default";
@@ -228,7 +304,7 @@ function clear() {
   $("productSearch").value = $("navSearch").value = "";
   $("category").value = "all";
   $("sort").value = "default";
-  filter();
+  fetchProducts();
 }
 function subscribe(e) {
   e.preventDefault();

@@ -1,0 +1,9 @@
+{
+  "name": "haniel-stores",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Haniel Stores - e-commerce site (static front end + Vercel serverless API + Supabase)",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.2"
+  }
+}

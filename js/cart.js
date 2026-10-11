@@ -1,3 +1,7 @@
+const isInPagesFolder = window.location.pathname.includes("/pages/") || window.location.pathname.endsWith("/pages");
+const pageLink = (page) => isInPagesFolder ? page : `pages/${page}`;
+const homeLink = isInPagesFolder ? "../index.html" : "index.html";
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const toastElement = document.getElementById("cartToast");
@@ -139,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <i class="bi bi-cart-x"></i>
                 <h3>Your cart is empty</h3>
                 <p>Add some products to your cart and they will appear here.</p>
-                <a href="index.html" class="outline-btn">
+                <a href="${homeLink}" class="outline-btn">
                     Continue Shopping
                 </a>
             </div>
@@ -251,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             setTimeout(() => {
-                window.location.href = "checkout.html";
+                window.location.href = pageLink("checkout.html");
             }, 900);
         });
 

@@ -1,3 +1,7 @@
+const isInPagesFolder = window.location.pathname.includes("/pages/") || window.location.pathname.endsWith("/pages");
+const pageLink = (page) => isInPagesFolder ? page : `pages/${page}`;
+const homeLink = isInPagesFolder ? "../index.html" : "index.html";
+
 /* =====================================================
    CONTACT PAGE JAVASCRIPT
 ===================================================== */
@@ -215,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Change this later to your actual shop/search page.
     */
 
-    window.location.href = `shop.html?search=${encodeURIComponent(searchValue)}`;
+    window.location.href = `${homeLink}?search=${encodeURIComponent(searchValue)}`;
   }
 
   searchBtn.addEventListener("click", performSearch);

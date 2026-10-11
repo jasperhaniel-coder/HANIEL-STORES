@@ -1,3 +1,7 @@
+const isInPagesFolder = window.location.pathname.includes("/pages/") || window.location.pathname.endsWith("/pages");
+const pageLink = (page) => isInPagesFolder ? page : `pages/${page}`;
+const homeLink = isInPagesFolder ? "../index.html" : "index.html";
+
 document.addEventListener("DOMContentLoaded", () => {
   const toastElement = document.getElementById("siteToast");
   const toastMessage = document.getElementById("toastMessage");
@@ -26,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     
-    window.location.href = `index.html?search=${encodeURIComponent(search)}`;
+    window.location.href = `${homeLink}?search=${encodeURIComponent(search)}`;
   });
 
   /* --------HEADER ICONS------- */
@@ -73,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     event.currentTarget.classList.add("clicked");
 
     setTimeout(() => {
-      window.location.href = "index.html";
+      window.location.href = homeLink;
     }, 100);
   });
 });

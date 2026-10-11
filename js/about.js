@@ -1,3 +1,7 @@
+const isInPagesFolder = window.location.pathname.includes("/pages/") || window.location.pathname.endsWith("/pages");
+const pageLink = (page) => isInPagesFolder ? page : `pages/${page}`;
+const homeLink = isInPagesFolder ? "../index.html" : "index.html";
+
 document.addEventListener("DOMContentLoaded", () => {
   /* ------TOAST HELPE------- */
   const toast = document.getElementById("aboutToast");
@@ -118,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    window.location.href = `index.html?search=${encodeURIComponent(value)}`;
+    window.location.href = `${homeLink}?search=${encodeURIComponent(value)}`;
   }
 
   searchBtn.addEventListener("click", doSearch);
